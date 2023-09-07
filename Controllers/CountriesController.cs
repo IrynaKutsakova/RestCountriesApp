@@ -70,5 +70,18 @@ namespace RestCountriesApp.Controllers
 
             return Ok(filteredCountries);
         }
+
+        // GET: api/countries/populationLessThanMillion?value=10
+        [HttpGet("populationLessThanMillion")]
+        public async Task<IActionResult> FilterByPopulationLessThanMillion(int value)
+        {
+            var response = await HttpClient.GetStringAsync(_countriesApiEndpoint);
+            var countries = JsonConvert.DeserializeObject<List<CountryInfo>>(response);
+
+            int populationThreshold = value * 1000000;  // Convert the provided number into an actual population count.
+            var filteredCountries = countries.Where(c => c.Population < populationThreshold).ToList();
+
+            return Ok(filteredCountries);
+        }
     }
 }
