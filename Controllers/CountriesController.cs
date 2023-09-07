@@ -55,5 +55,20 @@ namespace RestCountriesApp.Controllers
 
             return Ok(countries);
         }
+
+        // GET: api/countries/search?name=your_search_term
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchByCommonName(string name)
+        {
+            var response = await HttpClient.GetStringAsync(_countriesApiEndpoint);
+            var countries = JsonConvert.DeserializeObject<List<CountryInfo>>(response);
+
+            // Filtering countries by name/common that contains the provided string (case-insensitive)
+            var filteredCountries = countries.Where(c =>
+                c.Name.Common.Contains(name, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+
+            return Ok(filteredCountries);
+        }
     }
 }
