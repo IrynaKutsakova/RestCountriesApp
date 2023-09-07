@@ -5,8 +5,6 @@
         public NameInfo Name { get; set; }
 
         public List<string> Capital { get; set; }
-
-        // public List<string> Borders { get; set; }
         public string Cioc { get; set; }
         public Dictionary<string, Currency> Currencies { get; set; }
         public string Demonym { get; set; }
