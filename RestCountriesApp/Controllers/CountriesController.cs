@@ -12,18 +12,18 @@ namespace RestCountriesApp.Controllers
     public class CountriesController : ControllerBase
     {
         private readonly string _countriesApiEndpoint;
-        private readonly HttpClient _httpClient;
+        private static readonly HttpClient HttpClient = new HttpClient();
 
         /// <summary>
         /// Constructor to initialize the CountriesController with required configurations.
         /// </summary>
         /// <param name="configuration">App's configuration to fetch necessary settings.</param>
         /// <param name="httpClient">HttpClient object</param>
-        public CountriesController(IConfiguration configuration, HttpClient httpClient)
+        public CountriesController(IConfiguration configuration)
         {
             _countriesApiEndpoint = configuration.GetValue<string>("ApiUrls:RESTCountriesAPI");
-            _httpClient = httpClient;
         }
+
 
         /// <summary>
         /// Retrieves countries based on provided filters.
@@ -44,7 +44,7 @@ namespace RestCountriesApp.Controllers
         public async Task<IActionResult> FetchCountries(string? param1 = null, int? number = null,
             string? param3 = null, string? sortOrder = "ascend", int? limit = null)
         {
-            var response = await _httpClient.GetStringAsync(_countriesApiEndpoint);
+            var response = await HttpClient.GetStringAsync(_countriesApiEndpoint);
             var countries = JsonConvert.DeserializeObject<List<CountryInfo>>(response);
 
             // existing filters...
@@ -91,7 +91,7 @@ namespace RestCountriesApp.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> SearchByCommonName(string name)
         {
-            var response = await _httpClient.GetStringAsync(_countriesApiEndpoint);
+            var response = await HttpClient.GetStringAsync(_countriesApiEndpoint);
             var countries = JsonConvert.DeserializeObject<List<CountryInfo>>(response);
 
             // Filtering countries by name/common that contains the provided string (case-insensitive)
@@ -111,7 +111,7 @@ namespace RestCountriesApp.Controllers
         [HttpGet("populationLessThanMillion")]
         public async Task<IActionResult> FilterByPopulationLessThanMillion(int value)
         {
-            var response = await _httpClient.GetStringAsync(_countriesApiEndpoint);
+            var response = await HttpClient.GetStringAsync(_countriesApiEndpoint);
             var countries = JsonConvert.DeserializeObject<List<CountryInfo>>(response);
 
             int populationThreshold = value * 1000000; // Convert the provided number into an actual population count.
