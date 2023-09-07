@@ -22,17 +22,18 @@ namespace RestCountriesApp.Controllers
         }
 
 
-        // GET: api/countries?param1=value1&number=1&param3=value3
+        // GET: api/countries?param1=value1&number=1&param3=value3&sortOrder=value
         // If you call /api/countries? param1 = Canada, it will return countries with names that contain "Canada".
         // If you call /api/countries? number = 50000000, it will return countries with a population of 50 million or more.
         // If you call /api/countries? param3 = Asia, it will return countries in the Asia region.
+        // If you call /api/countries?sortOrder=descend to get countries sorted in descending order by their name/common
         [HttpGet]
-        public async Task<IActionResult> FetchCountries(string? param1 = null, int? number = null,
-            string? param3 = null)
+        public async Task<IActionResult> FetchCountries(string? param1 = null, int? number = null, string? param3 = null, string? sortOrder = "ascend")
         {
             var response = await HttpClient.GetStringAsync(_countriesApiEndpoint);
             var countries = JsonConvert.DeserializeObject<List<CountryInfo>>(response);
 
+            // existing filters...
             if (!string.IsNullOrWhiteSpace(param1)) // This is for nameFilter
             {
                 countries = countries.Where(c =>
@@ -51,6 +52,12 @@ namespace RestCountriesApp.Controllers
                 countries = countries.Where(c =>
                     c.Region.Equals(param3, StringComparison.OrdinalIgnoreCase)
                 ).ToList();
+            }
+
+            // Sort countries by name
+            if (!string.IsNullOrWhiteSpace(sortOrder))
+            {
+                countries = SortCountriesByName(countries, sortOrder);
             }
 
             return Ok(countries);
@@ -83,5 +90,22 @@ namespace RestCountriesApp.Controllers
 
             return Ok(filteredCountries);
         }
+
+        public List<CountryInfo> SortCountriesByName(List<CountryInfo> countries, string sortOrder)
+        {
+            if (string.IsNullOrEmpty(sortOrder) || sortOrder.Equals("ascend", StringComparison.OrdinalIgnoreCase))
+            {
+                return countries.OrderBy(c => c.Name.Common).ToList();
+            }
+            else if (sortOrder.Equals("descend", StringComparison.OrdinalIgnoreCase))
+            {
+                return countries.OrderByDescending(c => c.Name.Common).ToList();
+            }
+            else
+            {
+                throw new ArgumentException("Invalid sortOrder provided");
+            }
+        }
+
     }
 }
